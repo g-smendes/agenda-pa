@@ -3,7 +3,6 @@
 import {
   CalendarIcon,
   ClockIcon,
-  DollarSignIcon,
   TrashIcon,
 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
@@ -34,7 +33,6 @@ import {
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { doctorsTable } from "@/db/schema";
-import { formatCurrencyInCents } from "@/helpers/currency";
 
 import { getAvailability } from "../_helpers/availability";
 import UpsertDoctorForm from "./upsert-doctor-form";
@@ -88,10 +86,6 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
           <ClockIcon className="mr-1" />
           {availability.from.format("HH:mm")} as{" "}
           {availability.to.format("HH:mm")}
-        </Badge>
-        <Badge variant="outline">
-          <DollarSignIcon className="mr-1" />
-          {formatCurrencyInCents(doctor.appointmentPriceInCents)}
         </Badge>
       </CardContent>
       <Separator />

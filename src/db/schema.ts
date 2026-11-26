@@ -7,6 +7,7 @@ import {
   text,
   time,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -16,9 +17,6 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull(),
   image: text("image"),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  plan: text("plan"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
@@ -123,7 +121,6 @@ export const doctorsTable = pgTable("doctors", {
   availableFromTime: time("available_from_time").notNull(),
   availableToTime: time("available_to_time").notNull(),
   specialty: text("specialty").notNull(),
-  appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -169,24 +166,29 @@ export const patientsTableRelations = relations(
   }),
 );
 
-export const appointmentsTable = pgTable("appointments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  date: timestamp("date").notNull(),
-  appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
-  clinicId: uuid("clinic_id")
-    .notNull()
-    .references(() => clinicsTable.id, { onDelete: "cascade" }),
-  patientId: uuid("patient_id")
-    .notNull()
-    .references(() => patientsTable.id, { onDelete: "cascade" }),
-  doctorId: uuid("doctor_id")
-    .notNull()
-    .references(() => doctorsTable.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const appointmentsTable = pgTable(
+  "appointments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    date: timestamp("date").notNull(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinicsTable.id, { onDelete: "cascade" }),
+    patientId: uuid("patient_id")
+      .notNull()
+      .references(() => patientsTable.id, { onDelete: "cascade" }),
+    doctorId: uuid("doctor_id")
+      .notNull()
+      .references(() => doctorsTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("appointments_doctor_date_uq").on(table.doctorId, table.date),
+  ],
+);
 
 export const appointmentsTableRelations = relations(
   appointmentsTable,

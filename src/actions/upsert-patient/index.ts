@@ -1,5 +1,6 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -32,6 +33,7 @@ export const upsertPatient = actionClient
       })
       .onConflictDoUpdate({
         target: [patientsTable.id],
+        setWhere: eq(patientsTable.clinicId, session.user.clinic.id),
         set: {
           ...parsedInput,
         },

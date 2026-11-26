@@ -41,9 +41,6 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   if (!session.user.clinic) {
     redirect("/clinic-form");
   }
-  if (!session.user.plan) {
-    redirect("/new-subscription");
-  }
   const { from, to } = await searchParams;
   if (!from || !to) {
     redirect(
@@ -51,7 +48,6 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
     );
   }
   const {
-    totalRevenue,
     totalAppointments,
     totalPatients,
     totalDoctors,
@@ -86,7 +82,7 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
       </PageHeader>
       <PageContent>
         <StatsCards
-          totalRevenue={totalRevenue.total ? Number(totalRevenue.total) : null}
+          totalTodayAppointments={todayAppointments.length}
           totalAppointments={totalAppointments.total}
           totalPatients={totalPatients.total}
           totalDoctors={totalDoctors.total}

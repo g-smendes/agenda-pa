@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { and, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
@@ -20,7 +20,6 @@ export const getDashboard = async ({ from, to, session }: Params) => {
   const chartStartDate = dayjs().subtract(10, "days").startOf("day").toDate();
   const chartEndDate = dayjs().add(10, "days").endOf("day").toDate();
   const [
-    [totalRevenue],
     [totalAppointments],
     [totalPatients],
     [totalDoctors],
@@ -29,18 +28,6 @@ export const getDashboard = async ({ from, to, session }: Params) => {
     todayAppointments,
     dailyAppointmentsData,
   ] = await Promise.all([
-    db
-      .select({
-        total: sum(appointmentsTable.appointmentPriceInCents),
-      })
-      .from(appointmentsTable)
-      .where(
-        and(
-          eq(appointmentsTable.clinicId, session.user.clinic.id),
-          gte(appointmentsTable.date, new Date(from)),
-          lte(appointmentsTable.date, new Date(to)),
-        ),
-      ),
     db
       .select({
         total: count(),
@@ -105,8 +92,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
     db.query.appointmentsTable.findMany({
       where: and(
         eq(appointmentsTable.clinicId, session.user.clinic.id),
-        gte(appointmentsTable.date, new Date()),
-        lte(appointmentsTable.date, new Date()),
+        gte(appointmentsTable.date, dayjs().startOf("day").toDate()),
+        lte(appointmentsTable.date, dayjs().endOf("day").toDate()),
       ),
       with: {
         patient: true,
@@ -117,10 +104,6 @@ export const getDashboard = async ({ from, to, session }: Params) => {
       .select({
         date: sql<string>`DATE(${appointmentsTable.date})`.as("date"),
         appointments: count(appointmentsTable.id),
-        revenue:
-          sql<number>`COALESCE(SUM(${appointmentsTable.appointmentPriceInCents}), 0)`.as(
-            "revenue",
-          ),
       })
       .from(appointmentsTable)
       .where(
@@ -134,7 +117,6 @@ export const getDashboard = async ({ from, to, session }: Params) => {
       .orderBy(sql`DATE(${appointmentsTable.date})`),
   ]);
   return {
-    totalRevenue,
     totalAppointments,
     totalPatients,
     totalDoctors,

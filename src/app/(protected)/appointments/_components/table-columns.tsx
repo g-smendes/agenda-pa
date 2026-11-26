@@ -55,19 +55,6 @@ export const appointmentsTableColumns: ColumnDef<AppointmentWithRelations>[] = [
     header: "Especialidade",
   },
   {
-    id: "price",
-    accessorKey: "appointmentPriceInCents",
-    header: "Valor",
-    cell: (params) => {
-      const appointment = params.row.original;
-      const price = appointment.appointmentPriceInCents / 100;
-      return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(price);
-    },
-  },
-  {
     id: "actions",
     cell: (params) => {
       const appointment = params.row.original;

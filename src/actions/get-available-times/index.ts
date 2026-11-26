@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -34,7 +34,10 @@ export const getAvailableTimes = actionClient
       throw new Error("Clínica não encontrada");
     }
     const doctor = await db.query.doctorsTable.findFirst({
-      where: eq(doctorsTable.id, parsedInput.doctorId),
+      where: and(
+        eq(doctorsTable.id, parsedInput.doctorId),
+        eq(doctorsTable.clinicId, session.user.clinic.id),
+      ),
     });
     if (!doctor) {
       throw new Error("Médico não encontrado");

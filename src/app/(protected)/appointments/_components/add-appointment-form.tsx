@@ -9,7 +9,6 @@ import { CalendarIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -32,7 +31,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -54,9 +52,6 @@ const formSchema = z.object({
   }),
   doctorId: z.string().min(1, {
     message: "Médico é obrigatório.",
-  }),
-  appointmentPrice: z.number().min(1, {
-    message: "Valor da consulta é obrigatório.",
   }),
   date: z.date({
     message: "Data é obrigatória.",
@@ -85,7 +80,6 @@ const AddAppointmentForm = ({
     defaultValues: {
       patientId: "",
       doctorId: "",
-      appointmentPrice: 0,
       date: undefined,
       time: "",
     },
@@ -105,27 +99,11 @@ const AddAppointmentForm = ({
     enabled: !!selectedDate && !!selectedDoctorId,
   });
 
-  // Atualizar o preço quando o médico for selecionado
-  useEffect(() => {
-    if (selectedDoctorId) {
-      const selectedDoctor = doctors.find(
-        (doctor) => doctor.id === selectedDoctorId,
-      );
-      if (selectedDoctor) {
-        form.setValue(
-          "appointmentPrice",
-          selectedDoctor.appointmentPriceInCents / 100,
-        );
-      }
-    }
-  }, [selectedDoctorId, doctors, form]);
-
   useEffect(() => {
     if (isOpen) {
       form.reset({
         patientId: "",
         doctorId: "",
-        appointmentPrice: 0,
         date: undefined,
         time: "",
       });
@@ -143,10 +121,7 @@ const AddAppointmentForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    createAppointmentAction.execute({
-      ...values,
-      appointmentPriceInCents: values.appointmentPrice * 100,
-    });
+    createAppointmentAction.execute(values);
   };
 
   const isDateAvailable = (date: Date) => {
@@ -225,31 +200,6 @@ const AddAppointmentForm = ({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="appointmentPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Valor da consulta</FormLabel>
-                <NumericFormat
-                  value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value.floatValue);
-                  }}
-                  decimalScale={2}
-                  fixedDecimalScale
-                  decimalSeparator=","
-                  thousandSeparator="."
-                  prefix="R$ "
-                  allowNegative={false}
-                  disabled={!selectedDoctorId}
-                  customInput={Input}
-                />
                 <FormMessage />
               </FormItem>
             )}

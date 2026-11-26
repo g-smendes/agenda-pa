@@ -2,6 +2,7 @@
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -51,6 +52,7 @@ export const upsertDoctor = actionClient
       })
       .onConflictDoUpdate({
         target: [doctorsTable.id],
+        setWhere: eq(doctorsTable.clinicId, session.user.clinic.id),
         set: {
           ...parsedInput,
           availableFromTime: availableFromTimeUTC.format("HH:mm:ss"),
